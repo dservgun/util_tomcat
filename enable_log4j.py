@@ -61,18 +61,31 @@ def copyJars(sourceDirectory, destinationDirectory):
 	copyFilesI('.jar', sourceDirectory, destinationDirectory)
 
 def deleteFile(aDirectory, aFile):
-	logger.debug("Deleting file " + aFile + " A directory " + aDirectory)
-	os.remove(os.path.join(aDirectory, aFile))
+	try:
+	   path = os.path.join(aDirectory, aFile)
+	   if os.path.exists(path):
+		   	logger.debug("Deleting file " + aFile + " from " + aDirectory)
+			os.remove(os.path.join(aDirectory, aFile))
+	   else:
+	   		logger.info("Path not found. Ignoring delete");
+	except Exception, e:
+		raise
+	else:
+		pass
+	finally:
+		pass
 def readConfig() :
 	config = ConfigParser.ConfigParser()
 	config.readfp(open('./config/setup.config'))
 	log4j_location = config.get('log4j', 'log4j_location')
+	commons_logging = config.get('log4j', 'commons_location')
 	catalina_home = config.get('tomcat', 'catalina_home')
 	catalina_lib = config.get('tomcat', 'catalina_lib')
 	catalina_conf = config.get('tomcat', 'catalina_conf')
 	catalina_props = config.get('tomcat', 'log_props')
 	sourceSetup = config.get('local_setup', 'sourceSetup')
 	log4j_location = os.path.join(homeDirectory(config), log4j_location)
+	commons_logging = os.path.join(homeDirectory(config), commons_logging)
 	catalina_lib = os.path.join(homeDirectory(config), catalina_home, catalina_lib)
 	catalina_conf = os.path.join(homeDirectory(config), catalina_home, catalina_conf)
 	
@@ -85,10 +98,10 @@ def readConfig() :
 	logger.debug(catalina_conf)
 	logger.debug("\n")
 	#Now copy the log4j files
-
 	#Now copy the juli files
 	copyJars(log4j_location, catalina_lib)
 	copyJars(sourceSetup, catalina_lib)
+	copyJars(commons_logging, catalina_lib)
 	copyProperties(sourceSetup, catalina_conf)
 	deleteFile(catalina_conf, catalina_props)
 
